@@ -141,23 +141,33 @@
       }
 
       try {
-        const res = await fetch('/api/apply', { method: 'POST', body: formData });
-        const data = await res.json();
-        if(data.success) {
-          msg.className = 'mt-4 text-xs font-medium text-green-600';
-          msg.innerText = 'Dossier transmis avec succès ! Un lien de suivi vous a été envoyé par email.';
-          e.target.reset();
-        } else {
-          throw new Error();
-        }
-      } catch(err) {
-        msg.className = 'mt-4 text-xs font-medium text-red-600';
-        msg.innerText = 'Erreur lors de l envoi. Veuillez réespayer.';
-      } finally {
-        btn.disabled = false;
-        btn.innerText = 'Envoyer mon dossier';
-      }
-    }
+  const res = await fetch('/api/apply', { method: 'POST', body: formData });
+  
+  // Guard against HTML error pages (like 404s)
+  const contentType = res.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    throw new Error(`Le serveur a répondu avec la valeur (${res.status}). Vérifiez le fichier netlify.toml.`);
+  }
+
+  const data = await res.json();
+
+  if (res.ok && data.success) {
+    msg.className = 'mt-4 text-xs font-medium text-green-600';
+    msg.innerText = 'Dossier transmis avec succès ! Un lien de suivi vous a été envoyé par email.';
+    e.target.reset();
+  } else {
+    throw new Error(data.error || 'Erreur serveur inconnue');
+  }
+} catch(err) {
+  msg.className = 'mt-4 text-xs font-medium text-red-600';
+  msg.innerText = `Erreur : ${err.message}`;
+  console.error("Détails de l'erreur :", err);
+} finally {
+  btn.disabled = false;
+  btn.innerText = 'Envoyer mon dossier';
+}
+    
+    
 
     // Vérification suivi par token
     async function checkStatus() {
