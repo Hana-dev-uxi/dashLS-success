@@ -46,7 +46,7 @@ async function generateGroqSummary(studentName, notes) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: 'llama-3.1-8b-instant',
         messages: [
           { role: 'system', content: 'Tu es un assistant d admissions universitaires. Rédige un résumé synthétique et concis en 3 phrases maximum du profil du candidat.' },
           { role: 'user', content: `Candidat: ${studentName}. Remarques/Motivations: ${notes}` }
