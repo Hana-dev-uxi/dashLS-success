@@ -72,21 +72,21 @@
       <div id="statusOut" class="text-sm"></div>
     </section>
 
-    <!-- TAB 3: ESPACE STAFF (VERROUILLÉ PAR MOT DE PASSE) -->
+    <!-- TAB 3: ESPACE STAFF -->
     <section id="view-staff" class="hidden">
-      <!-- 1. Écran de Connexion (affiché par défaut) -->
+      <!-- 1. Écran de Connexion -->
       <div id="staff-login" class="max-w-sm mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-200 my-12">
         <h2 class="text-lg font-bold text-gray-900 mb-1">Accès Administrateur</h2>
         <p class="text-xs text-gray-500 mb-4">Entrez le mot de passe staff pour accéder aux candidatures.</p>
 
         <form onsubmit="loginStaff(event)" class="space-y-3">
-          <input type="password" id="staffPassInput" placeholder="Mot de passe" required class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <input type="password" id="staffPassInput" autocomplete="current-password" placeholder="Mot de passe" required class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
           <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg text-sm transition">Se connecter</button>
         </form>
         <div id="loginErr" class="text-red-500 text-xs font-medium mt-2 hidden">Mot de passe incorrect.</div>
       </div>
 
-      <!-- 2. Dashboard Staff (masqué jusqu'à authentification) -->
+      <!-- 2. Dashboard Staff -->
       <div id="staff-dashboard" class="hidden">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-bold">Gestion des dossiers reçus</h2>
@@ -141,33 +141,31 @@
       }
 
       try {
-  const res = await fetch('/api/apply', { method: 'POST', body: formData });
-  
-  // Guard against HTML error pages (like 404s)
-  const contentType = res.headers.get('content-type');
-  if (!contentType || !contentType.includes('application/json')) {
-    throw new Error(`Le serveur a répondu avec la valeur (${res.status}). Vérifiez le fichier netlify.toml.`);
-  }
+        const res = await fetch('/api/apply', { method: 'POST', body: formData });
+        
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error(`Le serveur a répondu avec la valeur (${res.status}). Vérifiez le fichier netlify.toml.`);
+        }
 
-  const data = await res.json();
+        const data = await res.json();
 
-  if (res.ok && data.success) {
-    msg.className = 'mt-4 text-xs font-medium text-green-600';
-    msg.innerText = 'Dossier transmis avec succès ! Un lien de suivi vous a été envoyé par email.';
-    e.target.reset();
-  } else {
-    throw new Error(data.error || 'Erreur serveur inconnue');
-  }
-} catch(err) {
-  msg.className = 'mt-4 text-xs font-medium text-red-600';
-  msg.innerText = `Erreur : ${err.message}`;
-  console.error("Détails de l'erreur :", err);
-} finally {
-  btn.disabled = false;
-  btn.innerText = 'Envoyer mon dossier';
-}
-    
-    
+        if (res.ok && data.success) {
+          msg.className = 'mt-4 text-xs font-medium text-green-600';
+          msg.innerText = 'Dossier transmis avec succès ! Un lien de suivi vous a été envoyé par email.';
+          e.target.reset();
+        } else {
+          throw new Error(data.error || 'Erreur serveur inconnue');
+        }
+      } catch(err) {
+        msg.className = 'mt-4 text-xs font-medium text-red-600';
+        msg.innerText = `Erreur : ${err.message}`;
+        console.error("Détails de l'erreur :", err);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Envoyer mon dossier';
+      }
+    } // <--- Added the missing closing brace here
 
     // Vérification suivi par token
     async function checkStatus() {
