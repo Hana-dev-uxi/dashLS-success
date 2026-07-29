@@ -1,25 +1,45 @@
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://hipxzbvvvjspvczjvopk.supabase.co";
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-if (!SUPABASE_ANON_KEY) throw new Error("Missing SUPABASE_ANON_KEY");
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS'
+};
 
-export default async (req) => {
-  const url = new URL(req.url);
-  const token = url.searchParams.get('token');
-  if (!token) {
-    return new Response(JSON.stringify({ error: 'Token manquant' }), { status: 400 });
+export async function onRequest(context) {
+  const { request, env } = context;
+
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/applications?access_token=eq.${token}&select=*`, {
+  const url = new URL(request.url);
+  const token = url.searchParams.get('token');
+  if (!token) {
+    return new Response(JSON.stringify({ error: 'Token manquant' }), { 
+      status: 400, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
+  }
+
+  const supabaseUrl = env.SUPABASE_URL || "https://hipxzbvvvjspvczjvopk.supabase.co";
+  const supabaseKey = env.SUPABASE_ANON_KEY;
+
+  const dbRes = await fetch(`${supabaseUrl}/rest/v1/applications?access_token=eq.${token}&select=*`, {
     headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`
     }
   });
 
   const data = await dbRes.json();
   if (!data || !data.length) {
-    return new Response(JSON.stringify({ error: 'Candidature introuvable' }), { status: 404 });
+    return new Response(JSON.stringify({ error: 'Candidature introuvable' }), { 
+      status: 404, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 
-  return new Response(JSON.stringify(data[0]), { status: 200 });
-};
+  return new Response(JSON.stringify(data[0]), { 
+    status: 200, 
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+  });
+}
