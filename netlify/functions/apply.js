@@ -78,12 +78,10 @@ async function sendEmail(to, subject, html) {
 }
 
 export default async (req) => {
-  // 1. Respond immediately to browser preflight OPTIONS requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  // 2. Enforce POST for actual form submissions
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
       status: 405, 
@@ -101,7 +99,6 @@ export default async (req) => {
 
     const uploadedDocUrls = [];
     for (const file of files) {
-      // Safely skip empty inputs or unselected files
       if (file && typeof file === 'object' && file.name && file.size > 0) {
         const publicUrl = await uploadToSupabase(file);
         uploadedDocUrls.push(publicUrl);
