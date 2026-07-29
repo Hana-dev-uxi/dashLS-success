@@ -1,9 +1,15 @@
 import path from 'path';
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY; 
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://hipxzbvvvjspvczjvopk.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "";
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS'
+};
 
 async function uploadToSupabase(file) {
   const fileExt = path.extname(file.name) || '.bin';
@@ -22,7 +28,10 @@ async function uploadToSupabase(file) {
     body: buffer
   });
 
-  if (!res.ok) throw new Error('Échec de l upload du fichier');
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Storage upload failed: ${errText}`);
+  }
   return `${SUPABASE_URL}/storage/v1/object/public/student-docs/${fileName}`;
 }
 
@@ -69,8 +78,17 @@ async function sendEmail(to, subject, html) {
 }
 
 export default async (req) => {
+  // 1. Respond immediately to browser preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  // 2. Enforce POST for actual form submissions
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
+      status: 405, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 
   try {
@@ -83,7 +101,8 @@ export default async (req) => {
 
     const uploadedDocUrls = [];
     for (const file of files) {
-      if (file && typeof file === 'object' && file.name) {
+      // Safely skip empty inputs or unselected files
+      if (file && typeof file === 'object' && file.name && file.size > 0) {
         const publicUrl = await uploadToSupabase(file);
         uploadedDocUrls.push(publicUrl);
       }
@@ -110,18 +129,34 @@ export default async (req) => {
     });
 
     const data = await dbRes.json();
-    if (!dbRes.ok) return new Response(JSON.stringify({ error: 'Erreur lors de l enregistrement' }), { status: 400 });
+    if (!dbRes.ok) {
+      return new Response(JSON.stringify({ error: `Database error: ${data.message || JSON.stringify(data)}` }), { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
 
     const appRecord = data[0];
+    if (!appRecord) {
+      throw new Error("Database inserted row but returned no record.");
+    }
+
     const urlObj = new URL(req.url);
-    const trackingUrl = `${urlObj.origin}/?token=${appRecord.access_token}`;
+    const trackingToken = appRecord.access_token || appRecord.id;
+    const trackingUrl = `${urlObj.origin}/?token=${trackingToken}`;
 
     await sendEmail(email, "Confirmation de votre dossier de candidature", 
       `<p>Bonjour ${name},</p><p>Votre candidature a bien été transmise.</p><p>Vous pouvez suivre son avancement via ce lien : <a href="${trackingUrl}">${trackingUrl}</a></p>`
     );
 
-    return new Response(JSON.stringify({ success: true, token: appRecord.access_token }), { status: 200 });
+    return new Response(JSON.stringify({ success: true, token: trackingToken }), { 
+      status: 200, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message }), { 
+      status: 500, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
   }
 };
