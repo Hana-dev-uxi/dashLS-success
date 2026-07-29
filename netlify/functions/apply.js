@@ -1,7 +1,8 @@
 import path from 'path';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://hipxzbvvvjspvczjvopk.supabase.co";
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+if (!SUPABASE_ANON_KEY) throw new Error("Missing SUPABASE_ANON_KEY");
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 
