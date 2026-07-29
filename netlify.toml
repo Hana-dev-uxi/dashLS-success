@@ -1,33 +1,14 @@
 [build]
-  publish = "public"
+  publish = "."
   functions = "netlify/functions"
 
-[[redirects]]
-  from = "/api/staff/verify"
-  to = "/.netlify/functions/staff-verify"
-  status = 200
+[build.environment]
+  NODE_VERSION = "20"
+
+[functions]
+  node_bundler = "esbuild"
 
 [[redirects]]
-  from = "/api/apply"
-  to = "/.netlify/functions/apply"
-  status = 200
-
-[[redirects]]
-  from = "/api/status"
-  to = "/.netlify/functions/status"
-  status = 200
-
-[[redirects]]
-  from = "/api/staff/list"
-  to = "/.netlify/functions/staff-list"
-  status = 200
-
-[[redirects]]
-  from = "/api/staff/action"
-  to = "/.netlify/functions/staff-action"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
   status = 200
