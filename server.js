@@ -78,7 +78,7 @@ async function sendEmail(to, subject, html) {
 }
 
 // Vérification du mot de passe Staff
-app.post('/api/staff/verify', (req, res) => {
+app.post('/api/staff-verify', (req, res) => {
   const { password } = req.body;
   if (password === STAFF_PASSWORD || password === 'admin123') {
     return res.json({ success: true });
@@ -154,7 +154,7 @@ app.get('/api/status', async (req, res) => {
 });
 
 // Liste pour le staff
-app.get('/api/staff/list', async (req, res) => {
+app.get('/api/staff-list', async (req, res) => {
   const pass = req.headers['x-staff-code'];
   if (pass !== STAFF_PASSWORD && pass !== 'admin123') {
     return res.status(403).json({ error: 'Accès refusé' });
@@ -172,7 +172,7 @@ app.get('/api/staff/list', async (req, res) => {
 });
 
 // Action du staff (Approuver / Rejeter)
-app.post('/api/staff/action', async (req, res) => {
+app.post('/api/staff-action', async (req, res) => {
   const pass = req.headers['x-staff-code'];
   if (pass !== STAFF_PASSWORD && pass !== 'admin123') {
     return res.status(403).json({ error: 'Accès refusé' });

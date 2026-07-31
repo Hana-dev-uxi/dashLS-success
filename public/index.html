@@ -193,7 +193,7 @@
       const err = document.getElementById('loginErr');
       err.classList.add('hidden');
 
-      const res = await fetch('/api/staff/verify', {
+      const res = await fetch('/api/staff-verify', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ password: pass })
@@ -218,7 +218,7 @@
 
     // Chargement des étudiants dans le dashboard
     async function loadStaffList() {
-      const res = await fetch('/api/staff/list', {
+      const res = await fetch('/api/staff-list', {
         headers: { 'x-staff-code': activeStaffPassword }
       });
       if(!res.ok) return logoutStaff();
@@ -295,7 +295,7 @@
 
     async function updateStatus(id, action) {
       const notes = document.getElementById('staffNotesInput').value;
-      await fetch('/api/staff/action', {
+      await fetch('/api/staff-action', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
