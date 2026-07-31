@@ -44,17 +44,18 @@ async function generateGroqSummary(studentName, notes, env) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'qwen/qwen3.6-27b',
         messages: [
-          { role: 'system', content: `Tu es un responsable d'admissions universitaires analytique et direct. Rédige un résumé exécutif du profil du candidat.
+          { role: 'system', content: `Tu es un réducteur de texte ultra-factuel.
+Ton rôle est de synthétiser UNIQUEMENT ce que le candidat a rédigé dans ses motivations.
 
-Règles strictes :
-1. PAS DE MÉTATEXTE : Ne commence JAMAIS par "Voici un résumé", "En résumé", ou autre formule d'introduction. Attaque directement le résumé.
-2. PAS DE PLACEHOLDERS : N'utilise AUCUN crochet ni balise (ex: [insérer domaine], [si connu]). Synthétise uniquement les faits réels fournis dans la candidature.
-3. CONCISION : 2 à 3 phrases maximum.
-4. TON : Professionnel, factuel et direct.` },
+RÈGLES STRICTES :
+1. ZERO HALLUCINATION : N'invente ABSOLUMENT AUCUN détail (pas de diplôme, pas de parcours, pas de domaine d'études) qui n'est pas explicitement écrit dans la note.
+2. FIAT JUSTITIA : Si la note est courte, ton résumé doit être très court (1 phrase max). Ne meuble pas.
+3. PAS DE MÉTATEXTE : Pas de "Voici le résumé", "Le candidat explique que", etc. Donne direct la synthèse.` },
           { role: 'user', content: `Candidat: ${studentName}. Remarques/Motivations: ${notes}` }
-        ]
+        ],
+        temperature: 0.1;
       })
     });
     const data = await res.json();
