@@ -45,6 +45,7 @@ async function generateGroqSummary(studentName, notes, env) {
       },
       body: JSON.stringify({
         model: 'qwen/qwen3.6-27b',
+        reasoning_effort: "none",
         messages: [
           { role: 'system', content: `Tu es un réducteur de texte ultra-factuel.
 Ton rôle est de synthétiser UNIQUEMENT ce que le candidat a rédigé dans ses motivations.
