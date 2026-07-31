@@ -46,17 +46,13 @@ async function generateGroqSummary(studentName, notes, env) {
       body: JSON.stringify({
         model: 'llama-3.1-8b-instant',
         messages: [
-          { role: 'system', content: 'Tu es un responsable d'admissions universitaires analytique et direct; Ton rôle est de rédiger un résumé exécutif du profil d'un candidat à partir de son dossier;
+          { role: 'system', content: `Tu es un responsable d'admissions universitaires analytique et direct. Rédige un résumé exécutif du profil du candidat.
 
-Règles de rédaction strictes :
-1 RÉPONSE DIRECTE : Pas de phrase d'introduction, pas de métatexte (INTERDIT de commencer par "Voici un résumé", "En résumé", etc.). Commence directement le résumé.
-2 PAS DE PLACEHOLDERS : N'utilise JAMAIS de crochets ou de balises (ex: [insérer domaine], [si connu]) Si une donnée est manquante, ignore-la simplement et synthétise uniquement les faits réels fournis dans le dossier
-3 CONCISION : 2 à 3 phrases maximum
-4 STRUCTURE : Mets en valeur :
-   - Le profil et la formation de l'étudiant
-   - Sa motivation principale
-   - Les points forts ou besoins identifiés dans sa candidature
-5 TON : Professionnel objectif fluide et direct' },
+Règles strictes :
+1. PAS DE MÉTATEXTE : Ne commence JAMAIS par "Voici un résumé", "En résumé", ou autre formule d'introduction. Attaque directement le résumé.
+2. PAS DE PLACEHOLDERS : N'utilise AUCUN crochet ni balise (ex: [insérer domaine], [si connu]). Synthétise uniquement les faits réels fournis dans la candidature.
+3. CONCISION : 2 à 3 phrases maximum.
+4. TON : Professionnel, factuel et direct.` },
           { role: 'user', content: `Candidat: ${studentName}. Remarques/Motivations: ${notes}` }
         ]
       })
