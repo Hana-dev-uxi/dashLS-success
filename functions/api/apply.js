@@ -54,8 +54,7 @@ RÈGLES STRICTES :
 2. FIAT JUSTITIA : Si la note est courte, ton résumé doit être très court (1 phrase max). Ne meuble pas.
 3. PAS DE MÉTATEXTE : Pas de "Voici le résumé", "Le candidat explique que", etc. Donne direct la synthèse.` },
           { role: 'user', content: `Candidat: ${studentName}. Remarques/Motivations: ${notes}` }
-        ],
-        temperature: 0.1;
+        ]
       })
     });
     const data = await res.json();
