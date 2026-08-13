@@ -6,188 +6,114 @@
   <title>Plateforme Candidatures — LS Success</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', sans-serif; }
-    .ls-brand { font-family: 'Playfair Display', serif; font-style: italic; }
-    .gold { color: #B8962E; }
-    .gold-bg { background: #B8962E; }
-    .gold-border { border-color: #B8962E; }
-    .gold-light { background: #FBF6E9; }
-
-    /* Status badges */
-    .badge-pending    { background:#F3F4F6; color:#6B7280; }
-    .badge-approved   { background:#DCFCE7; color:#166534; }
-    .badge-rejected   { background:#FEE2E2; color:#991B1B; }
-    .badge-action_required { background:#FEF3C7; color:#92400E; }
-
-    /* Gold accent line on active nav */
-    .nav-active { border-bottom: 2px solid #B8962E; color: #111; }
-
-    /* Candidate card hover */
-    .candidate-card:hover { border-color: #B8962E; background: #FBF6E9; }
-    .candidate-card.selected { border-color: #B8962E; background: #FBF6E9; }
-
-    /* Mobile modal overlay */
-    #detailModal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 50;
-      overflow-y: auto;
-    }
-    #detailModal.open { display: flex; align-items: flex-start; justify-content: center; padding: 1rem; }
-    #detailModalInner { background: white; border-radius: 1rem; width: 100%; max-width: 600px; margin-top: 2rem; }
-
-    /* Smooth transitions */
-    .candidate-card { transition: border-color 0.15s, background 0.15s; }
-    button { transition: opacity 0.15s, background 0.15s; }
+    .ls-brand { font-family: 'Playfair Display', serif; font-style: italic; color: #111; }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen text-gray-800">
+<body class="bg-gray-100 font-sans min-h-screen text-gray-800">
 
-  <!-- Header -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+  <header class="bg-white border-b shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <span class="text-sm text-gray-400 font-medium tracking-wide">Plateforme Candidatures</span>
+        <span class="text-sm text-gray-400 font-medium">Plateforme Candidatures</span>
         <span class="text-gray-300">·</span>
-        <span class="ls-brand text-lg text-gray-900">LS Success</span>
+        <span class="ls-brand text-lg">LS Success</span>
       </div>
-      <nav class="flex gap-1 text-sm">
-        <button onclick="tab('apply')" id="nav-apply" class="px-3 py-2 rounded-md font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 nav-btn">Déposer</button>
-        <button onclick="tab('status')" id="nav-status" class="px-3 py-2 rounded-md font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 nav-btn">Suivi</button>
-        <button onclick="tab('staff')" id="nav-staff" class="px-3 py-2 rounded-md font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 nav-btn">Staff</button>
+      <nav class="flex gap-3 text-sm">
+        <button onclick="tab('apply')" class="px-3 py-1.5 rounded-md hover:bg-gray-100 font-medium">Déposer un dossier</button>
+        <button onclick="tab('status')" class="px-3 py-1.5 rounded-md hover:bg-gray-100 font-medium">Suivi de dossier</button>
+        <button onclick="tab('staff')" class="px-3 py-1.5 rounded-md bg-gray-900 text-white font-semibold hover:bg-black">Espace Staff</button>
       </nav>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto p-4 md:p-6">
+  <main class="max-w-5xl mx-auto p-6">
 
     <!-- TAB 1: FORMULAIRE ÉTUDIANT -->
-    <section id="view-apply" class="max-w-lg mx-auto">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-        <div class="mb-6">
-          <div class="flex items-center gap-2 mb-1">
-            <div class="w-1 h-5 gold-bg rounded-full"></div>
-            <h2 class="text-xl font-semibold text-gray-900">Formulaire d'admission</h2>
-          </div>
-          <p class="text-xs text-gray-400 ml-3">Complétez vos informations et joignez vos documents.</p>
-        </div>
+    <section id="view-apply" class="max-w-lg mx-auto bg-white p-8 rounded-xl shadow-md border border-gray-200">
+      <h2 class="text-xl font-bold mb-1 text-gray-900">Formulaire d'admission</h2>
+      <p class="text-xs text-gray-500 mb-6">Complétez vos informations et joignez vos documents.</p>
 
-        <form onsubmit="submitForm(event)" class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold mb-1.5 text-gray-600 uppercase tracking-wide">Nom complet *</label>
-            <input type="text" id="name" required placeholder="Ex: Sarah Benali"
-              class="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-700 focus:border-transparent focus:outline-none bg-gray-50">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold mb-1.5 text-gray-600 uppercase tracking-wide">Adresse Email *</label>
-            <input type="email" id="email" required placeholder="sarah@example.com"
-              class="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-700 focus:border-transparent focus:outline-none bg-gray-50">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold mb-1.5 text-gray-600 uppercase tracking-wide">Téléphone <span class="normal-case font-normal text-gray-400">(optionnel)</span></label>
-            <input type="tel" id="phone" placeholder="+212 6 00 00 00 00"
-              class="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-700 focus:border-transparent focus:outline-none bg-gray-50">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold mb-1.5 text-gray-600 uppercase tracking-wide">Documents <span class="normal-case font-normal text-gray-400">(PDF, images…)</span></label>
-            <input type="file" id="documents" multiple
-              class="w-full text-xs text-gray-500 border border-gray-200 rounded-xl p-2.5 bg-gray-50 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-700">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold mb-1.5 text-gray-600 uppercase tracking-wide">Motivations / Remarques</label>
-            <textarea id="notes" rows="4" placeholder="Présentez brièvement votre parcours et vos objectifs..."
-              class="w-full border border-gray-200 p-3 rounded-xl text-sm focus:ring-2 focus:ring-yellow-700 focus:border-transparent focus:outline-none bg-gray-50 resize-none"></textarea>
-          </div>
-          <button type="submit" id="subBtn"
-            class="w-full gold-bg hover:opacity-90 text-white font-semibold py-3 rounded-xl text-sm tracking-wide">
-            Envoyer mon dossier
-          </button>
-        </form>
-        <div id="applyMsg" class="mt-4 text-xs font-medium"></div>
-      </div>
+      <form onsubmit="submitForm(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-gray-700">Nom complet *</label>
+          <input type="text" id="name" required placeholder="Ex: Sarah Benali" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-gray-800 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-gray-700">Adresse Email *</label>
+          <input type="email" id="email" required placeholder="sarah@example.com" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-gray-800 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-gray-700">Numéro de Téléphone (Optionnel)</label>
+          <input type="tel" id="phone" placeholder="+212 6 00 00 00 00" class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-gray-800 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-gray-700">Documents à joindre (PDF, Images, etc.)</label>
+          <input type="file" id="documents" multiple class="w-full text-xs text-gray-500 border border-gray-300 rounded-lg p-2 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-700">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1 text-gray-700">Motivations / Remarques</label>
+          <textarea id="notes" rows="3" placeholder="Présentez brièvement votre parcours..." class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-gray-800 focus:outline-none"></textarea>
+        </div>
+        <button type="submit" id="subBtn" class="w-full bg-gray-900 hover:bg-black text-white font-medium py-2.5 rounded-lg text-sm transition">Envoyer mon dossier</button>
+      </form>
+      <div id="applyMsg" class="mt-4 text-xs font-medium"></div>
     </section>
 
     <!-- TAB 2: SUIVI ÉTUDIANT -->
-    <section id="view-status" class="max-w-md mx-auto hidden">
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-        <div class="mb-6">
-          <div class="flex items-center gap-2 mb-1">
-            <div class="w-1 h-5 gold-bg rounded-full"></div>
-            <h2 class="text-xl font-semibold text-gray-900">Suivi de candidature</h2>
-          </div>
-          <p class="text-xs text-gray-400 ml-3">Entrez votre code unique reçu par email.</p>
-        </div>
-        <div class="flex gap-2 mb-4">
-          <input type="text" id="tokenIn" placeholder="Code de suivi…"
-            class="flex-1 border border-gray-200 p-3 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-700">
-          <button onclick="checkStatus()"
-            class="bg-gray-900 text-white px-5 rounded-xl text-sm font-semibold hover:bg-black">Vérifier</button>
-        </div>
-        <div id="statusOut" class="text-sm"></div>
+    <section id="view-status" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-200 hidden">
+      <h2 class="text-lg font-bold mb-2">Suivre ma candidature</h2>
+      <p class="text-xs text-gray-500 mb-4">Entrez votre code unique reçu par email.</p>
+      <div class="flex gap-2 mb-4">
+        <input type="text" id="tokenIn" placeholder="Code (ex: 8f9a2...)" class="flex-1 border p-2 rounded-lg text-sm">
+        <button onclick="checkStatus()" class="bg-gray-900 text-white px-4 rounded-lg text-sm font-medium hover:bg-black">Vérifier</button>
       </div>
+      <div id="statusOut" class="text-sm"></div>
     </section>
 
     <!-- TAB 3: ESPACE STAFF -->
     <section id="view-staff" class="hidden">
 
       <!-- Login -->
-      <div id="staff-login" class="max-w-sm mx-auto my-12">
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          <div class="mb-6">
-            <div class="flex items-center gap-2 mb-1">
-              <div class="w-1 h-5 gold-bg rounded-full"></div>
-              <h2 class="text-lg font-semibold text-gray-900">Accès Administrateur</h2>
-            </div>
-            <p class="text-xs text-gray-400 ml-3">Espace réservé à l'équipe LS Success.</p>
-          </div>
-          <form onsubmit="loginStaff(event)" class="space-y-3">
-            <input type="password" id="staffPassInput" autocomplete="current-password" placeholder="Mot de passe"
-              required class="w-full border border-gray-200 p-3 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-700">
-            <button type="submit"
-              class="w-full gold-bg hover:opacity-90 text-white font-semibold py-3 rounded-xl text-sm">Se connecter</button>
-          </form>
-          <div id="loginErr" class="text-red-500 text-xs font-medium mt-3 hidden">Mot de passe incorrect.</div>
-        </div>
+      <div id="staff-login" class="max-w-sm mx-auto bg-white p-6 rounded-xl shadow-md border border-gray-200 my-12">
+        <h2 class="text-lg font-bold text-gray-900 mb-1">Accès Administrateur</h2>
+        <p class="text-xs text-gray-500 mb-4">Entrez le mot de passe staff pour accéder aux candidatures.</p>
+        <form onsubmit="loginStaff(event)" class="space-y-3">
+          <input type="password" id="staffPassInput" autocomplete="current-password" placeholder="Mot de passe" required class="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:ring-2 focus:ring-gray-800 focus:outline-none">
+          <button type="submit" class="w-full bg-gray-900 hover:bg-black text-white font-medium py-2 rounded-lg text-sm transition">Se connecter</button>
+        </form>
+        <div id="loginErr" class="text-red-500 text-xs font-medium mt-2 hidden">Mot de passe incorrect.</div>
       </div>
 
       <!-- Dashboard -->
       <div id="staff-dashboard" class="hidden">
-
-        <!-- Top bar -->
-        <div class="flex justify-between items-center mb-5">
+        <div class="flex justify-between items-center mb-4">
           <div>
-            <h2 class="text-lg font-semibold text-gray-900">Gestion des dossiers</h2>
-            <p class="text-xs text-gray-400">LS Success · Espace administratif</p>
+            <h2 class="text-xl font-bold">Gestion des dossiers reçus</h2>
+            <p class="text-xs text-gray-400 mt-0.5">LS Success · Espace administratif</p>
           </div>
-          <button onclick="logoutStaff()" class="text-xs text-gray-400 hover:text-red-500 font-medium transition">Déconnexion</button>
+          <button onclick="logoutStaff()" class="text-xs text-red-600 font-semibold hover:underline">Déconnexion</button>
         </div>
 
-        <!-- Desktop layout -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-          <!-- Candidate list -->
-          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Liste -->
+          <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
             <!-- Search -->
-            <div class="mb-3">
-              <input type="text" id="searchInput" placeholder="Rechercher un candidat…" oninput="filterCandidates()"
-                class="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-700">
-            </div>
+            <input type="text" id="searchInput" placeholder="Rechercher…" oninput="filterCandidates()"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs mb-3 focus:outline-none focus:ring-2 focus:ring-gray-800">
             <div class="flex justify-between items-center mb-3">
-              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Candidats</span>
-              <span id="candidateCount" class="text-xs font-semibold gold bg-yellow-50 px-2 py-0.5 rounded-full">0</span>
+              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Candidats</h3>
+              <span id="candidateCount" class="text-xs font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">0</span>
             </div>
-            <div id="studentList" class="space-y-2 max-h-[560px] overflow-y-auto pr-1"></div>
+            <div id="studentList" class="space-y-2 max-h-[600px] overflow-y-auto"></div>
           </div>
 
-          <!-- Detail panel — desktop only -->
-          <div class="md:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-6 hidden md:block">
-            <div id="studentDetails" class="text-sm text-gray-400 flex flex-col items-center justify-center h-64 gap-2">
-              <div class="text-3xl">📋</div>
-              <p>Sélectionnez un candidat pour afficher son dossier.</p>
+          <!-- Détail -->
+          <div class="md:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div id="studentDetails" class="text-sm text-gray-500 flex items-center justify-center h-64">
+              Cliquez sur un candidat dans la liste pour afficher son dossier complet.
             </div>
           </div>
         </div>
@@ -195,42 +121,22 @@
     </section>
   </main>
 
-  <!-- Mobile detail modal -->
-  <div id="detailModal">
-    <div id="detailModalInner" class="p-6">
-      <div class="flex justify-between items-center mb-4">
-        <span class="text-sm font-semibold text-gray-700">Dossier candidat</span>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-700 text-lg font-bold">✕</button>
-      </div>
-      <div id="modalDetails"></div>
-    </div>
-  </div>
-
   <script>
     let activeStaffPassword = '';
     let allCandidates = [];
     let hiddenIds = new Set();
-    let selectedId = null;
 
-    // ── NAV ──────────────────────────────────────────────
     function tab(name) {
-      ['apply','status','staff'].forEach(t => {
-        document.getElementById('view-'+t).classList.add('hidden');
-        document.getElementById('nav-'+t).classList.remove('nav-active','text-gray-900');
-        document.getElementById('nav-'+t).classList.add('text-gray-600');
-      });
+      ['apply','status','staff'].forEach(t => document.getElementById('view-'+t).classList.add('hidden'));
       document.getElementById('view-'+name).classList.remove('hidden');
-      document.getElementById('nav-'+name).classList.add('nav-active','text-gray-900');
-      document.getElementById('nav-'+name).classList.remove('text-gray-600');
     }
 
-    // ── FORM SUBMIT ───────────────────────────────────────
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('subBtn');
       const msg = document.getElementById('applyMsg');
       btn.disabled = true;
-      btn.innerText = 'Envoi en cours…';
+      btn.innerText = 'Envoi en cours...';
       msg.innerText = '';
 
       const formData = new FormData();
@@ -239,13 +145,13 @@
       formData.append('phone', document.getElementById('phone').value);
       formData.append('notes', document.getElementById('notes').value);
       const files = document.getElementById('documents').files;
-      for (let i = 0; i < files.length; i++) formData.append('documents', files[i]);
+      for(let i=0; i<files.length; i++) formData.append('documents', files[i]);
 
       try {
         const res = await fetch('/api/apply', { method: 'POST', body: formData });
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-          throw new Error(`Erreur serveur (${res.status}).`);
+          throw new Error(`Le serveur a répondu avec la valeur (${res.status}). Vérifiez le fichier netlify.toml.`);
         }
         const data = await res.json();
         if (res.ok && data.success) {
@@ -255,8 +161,8 @@
         } else {
           throw new Error(data.error || 'Erreur serveur inconnue');
         }
-      } catch (err) {
-        msg.className = 'mt-4 text-xs font-medium text-red-500';
+      } catch(err) {
+        msg.className = 'mt-4 text-xs font-medium text-red-600';
         msg.innerText = `Erreur : ${err.message}`;
       } finally {
         btn.disabled = false;
@@ -264,29 +170,25 @@
       }
     }
 
-    // ── STATUS CHECK ──────────────────────────────────────
     async function checkStatus() {
       const t = document.getElementById('tokenIn').value;
       const res = await fetch('/api/status?token=' + t);
       const data = await res.json();
       const out = document.getElementById('statusOut');
-      if (res.ok) {
+      if(res.ok) {
+        const statusColors = { pending:'bg-gray-100 text-gray-700', approved:'bg-green-100 text-green-700', rejected:'bg-red-100 text-red-700', action_required:'bg-amber-100 text-amber-700' };
         const statusLabels = { pending:'En attente', approved:'Approuvé', rejected:'Refusé', action_required:'Action requise' };
-        const statusColors = { pending:'text-gray-600 bg-gray-100', approved:'text-green-700 bg-green-100', rejected:'text-red-700 bg-red-100', action_required:'text-amber-700 bg-amber-100' };
         out.innerHTML = `
-          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-2">
-            <p class="font-semibold text-gray-900">${data.student_name}</p>
-            <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[data.status] || 'bg-gray-100 text-gray-600'}">
-              ${statusLabels[data.status] || data.status}
-            </span>
-            ${data.staff_notes ? `<p class="text-xs text-gray-600 border-t pt-2 mt-2"><b>Message :</b> ${data.staff_notes}</p>` : ''}
+          <div class="bg-gray-50 p-4 rounded-lg border space-y-2">
+            <p><b>Nom :</b> ${data.student_name}</p>
+            <span class="inline-block text-xs font-bold px-2 py-0.5 rounded-full uppercase ${statusColors[data.status] || 'bg-gray-100 text-gray-700'}">${statusLabels[data.status] || data.status}</span>
+            ${data.staff_notes ? `<p class="text-xs text-gray-600 pt-1"><b>Message staff :</b> ${data.staff_notes}</p>` : ''}
           </div>`;
       } else {
-        out.innerHTML = `<span class="text-red-500 text-xs font-medium">Code non valide.</span>`;
+        out.innerHTML = `<span class="text-red-500 font-medium">Code non valide.</span>`;
       }
     }
 
-    // ── STAFF LOGIN ───────────────────────────────────────
     async function loginStaff(e) {
       e.preventDefault();
       const pass = document.getElementById('staffPassInput').value;
@@ -294,10 +196,10 @@
       err.classList.add('hidden');
       const res = await fetch('/api/staff-verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ password: pass })
       });
-      if (res.ok) {
+      if(res.ok) {
         activeStaffPassword = pass;
         document.getElementById('staff-login').classList.add('hidden');
         document.getElementById('staff-dashboard').classList.remove('hidden');
@@ -316,51 +218,13 @@
       hiddenIds = new Set();
     }
 
-    // ── LOAD LIST ─────────────────────────────────────────
     async function loadStaffList() {
-      const res = await fetch('/api/staff-list', { headers: { 'x-staff-code': activeStaffPassword } });
-      if (!res.ok) return logoutStaff();
+      const res = await fetch('/api/staff-list', {
+        headers: { 'x-staff-code': activeStaffPassword }
+      });
+      if(!res.ok) return logoutStaff();
       allCandidates = await res.json();
       renderList(allCandidates);
-    }
-
-    function renderList(data) {
-      const list = document.getElementById('studentList');
-      list.innerHTML = '';
-      const visible = data.filter(d => !hiddenIds.has(d.id));
-      document.getElementById('candidateCount').innerText = visible.length;
-
-      if (visible.length === 0) {
-        list.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Aucun dossier trouvé.</p>';
-        return;
-      }
-
-      const statusColors = {
-        pending: 'badge-pending',
-        approved: 'badge-approved',
-        rejected: 'badge-rejected',
-        action_required: 'badge-action_required'
-      };
-      const statusLabels = { pending:'En attente', approved:'Approuvé', rejected:'Refusé', action_required:'Action requise' };
-
-      visible.forEach(item => {
-        const div = document.createElement('div');
-        div.className = `candidate-card p-3 border border-gray-200 rounded-xl cursor-pointer ${selectedId === item.id ? 'selected' : ''}`;
-        div.dataset.id = item.id;
-        div.innerHTML = `
-          <div class="flex justify-between items-start gap-1">
-            <div class="min-w-0">
-              <div class="font-semibold text-sm text-gray-900 truncate">${item.student_name}</div>
-              <div class="text-xs text-gray-400 truncate">${item.student_email}</div>
-              <span class="inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColors[item.status] || 'badge-pending'} uppercase tracking-wide">
-                ${statusLabels[item.status] || item.status}
-              </span>
-            </div>
-            <button onclick="hideCandidate(event,'${item.id}')" title="Masquer" class="text-gray-300 hover:text-red-400 text-base flex-shrink-0 mt-0.5">✕</button>
-          </div>`;
-        div.addEventListener('click', () => openDetail(item));
-        list.appendChild(div);
-      });
     }
 
     function filterCandidates() {
@@ -371,98 +235,82 @@
       renderList(filtered);
     }
 
-    function hideCandidate(e, id) {
-      e.stopPropagation();
-      hiddenIds.add(id);
-      if (selectedId === id) {
-        selectedId = null;
-        document.getElementById('studentDetails').innerHTML = `
-          <div class="text-sm text-gray-400 flex flex-col items-center justify-center h-64 gap-2">
-            <div class="text-3xl">📋</div>
-            <p>Sélectionnez un candidat pour afficher son dossier.</p>
-          </div>`;
-        closeModal();
+    function renderList(data) {
+      const list = document.getElementById('studentList');
+      list.innerHTML = '';
+      const visible = data.filter(d => !hiddenIds.has(d.id));
+      document.getElementById('candidateCount').innerText = visible.length;
+
+      if(visible.length === 0) {
+        list.innerHTML = '<p class="text-xs text-gray-400">Aucun dossier reçu pour le moment.</p>';
+        return;
       }
-      filterCandidates();
-    }
-    function openDetail(app) {
-      selectedId = app.id;
-      filterCandidates(); // re-render to show selected state
-      const html = buildDetailHTML(app);
-      const isMobile = window.innerWidth < 768;
-      if (isMobile) {
-        document.getElementById('modalDetails').innerHTML = html;
-        document.getElementById('detailModal').classList.add('open');
-      } else {
-        document.getElementById('studentDetails').innerHTML = html;
-      }
-    }
 
-    function closeModal() {
-      document.getElementById('detailModal').classList.remove('open');
-    }
-
-    function buildDetailHTML(app) {
-      const docsHtml = (app.document_urls && app.document_urls.length)
-        ? app.document_urls.map((url, idx) =>
-            `<a href="${url}" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:border-yellow-600 hover:text-yellow-700 transition">📄 Document ${idx + 1}</a>`
-          ).join('')
-        : '<span class="text-xs text-gray-400">Aucun document transmis</span>';
-
-      const statusColors = {
-        pending: 'badge-pending',
-        approved: 'badge-approved',
-        rejected: 'badge-rejected',
-        action_required: 'badge-action_required'
-      };
+      const statusColors = { pending:'bg-gray-100 text-gray-600', approved:'bg-green-100 text-green-700', rejected:'bg-red-100 text-red-700', action_required:'bg-amber-100 text-amber-700' };
       const statusLabels = { pending:'En attente', approved:'Approuvé', rejected:'Refusé', action_required:'Action requise' };
 
-      return `
+      visible.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'p-3 border rounded-lg cursor-pointer hover:bg-amber-50 hover:border-amber-300 transition border-gray-200';
+        div.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div onclick="showDetail(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="flex-1 min-w-0">
+              <div class="font-bold text-sm text-gray-900 truncate">${item.student_name}</div>
+              <div class="text-xs text-gray-500 truncate">${item.student_email}</div>
+              <span class="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase ${statusColors[item.status] || 'bg-gray-100 text-gray-600'}">${statusLabels[item.status] || item.status}</span>
+            </div>
+            <button onclick="hideCandidate('${item.id}')" class="text-gray-300 hover:text-red-400 text-sm ml-2 flex-shrink-0" title="Masquer">✕</button>
+          </div>`;
+        list.appendChild(div);
+      });
+    }
+
+    function hideCandidate(id) {
+      hiddenIds.add(id);
+      filterCandidates();
+    }
+
+    function showDetail(app) {
+      const docsHtml = (app.document_urls && app.document_urls.length)
+        ? app.document_urls.map((url, idx) => `<a href="${url}" target="_blank" class="inline-flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 hover:underline">📄 Document ${idx+1}</a>`).join(' ')
+        : '<span class="text-xs text-gray-400">Aucun document transmis</span>';
+
+      const statusColors = { pending:'bg-gray-100 text-gray-600', approved:'bg-green-100 text-green-700', rejected:'bg-red-100 text-red-700', action_required:'bg-amber-100 text-amber-700' };
+      const statusLabels = { pending:'En attente', approved:'Approuvé', rejected:'Refusé', action_required:'Action requise' };
+
+      document.getElementById('studentDetails').innerHTML = `
         <div class="space-y-4">
           <div id="pdfArea" class="space-y-3">
             <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-gray-900">${app.student_name}</h3>
-              <span class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${statusColors[app.status] || 'badge-pending'}">
-                ${statusLabels[app.status] || app.status}
-              </span>
+              <h3 class="text-lg font-bold text-gray-900">${app.student_name}</h3>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${statusColors[app.status] || 'bg-gray-100 text-gray-600'}">${statusLabels[app.status] || app.status}</span>
             </div>
-
-            <div class="grid grid-cols-2 gap-3 text-xs bg-gray-50 p-3 rounded-xl border border-gray-100">
-              <div><span class="text-gray-400 uppercase tracking-wide text-[10px] font-semibold">Email</span><p class="text-gray-800 mt-0.5 truncate">${app.student_email}</p></div>
-              <div><span class="text-gray-400 uppercase tracking-wide text-[10px] font-semibold">Téléphone</span><p class="text-gray-800 mt-0.5">${app.student_phone || '—'}</p></div>
+            <div class="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border">
+              <p><b>Email :</b> ${app.student_email}</p>
+              <p><b>Téléphone :</b> ${app.student_phone || 'Non renseigné'}</p>
             </div>
-
-            <div class="bg-yellow-50 border border-yellow-100 rounded-xl p-3">
-              <p class="text-[10px] font-bold text-yellow-800 uppercase tracking-wide mb-1.5">Résumé IA</p>
-              <p class="text-xs text-yellow-900 leading-relaxed">${app.ai_summary || 'En attente…'}</p>
-            </div>
-
-            <div class="bg-gray-50 border border-gray-100 rounded-xl p-3">
-              <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Motivations</p>
-              <p class="text-xs text-gray-700 leading-relaxed">${app.notes || 'Aucune remarque'}</p>
-            </div>
-
             <div>
-              <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-2">Documents joints</p>
+              <p class="text-xs font-bold text-gray-700 mb-1">Résumé IA :</p>
+              <p class="text-xs bg-amber-50 text-amber-900 p-3 rounded-lg border border-amber-100">${app.ai_summary || 'En attente...'}</p>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-gray-700 mb-1">Motivations :</p>
+              <p class="text-xs bg-gray-50 p-3 rounded-lg border text-gray-700">${app.notes || 'Aucune remarque'}</p>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-gray-700 mb-1">Documents joints :</p>
               <div class="flex flex-wrap gap-2">${docsHtml}</div>
             </div>
           </div>
-
-          <div class="border-t border-gray-100 pt-4 space-y-3">
-            <div>
-              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wide block mb-1.5">Message pour le candidat</label>
-              <textarea id="staffNotesInput" rows="3"
-                class="w-full border border-gray-200 p-2.5 text-xs rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-600 resize-none">${app.staff_notes || ''}</textarea>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <button onclick="updateStatus('${app.id}', 'approved')"
-                class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">Approuver</button>
-              <button onclick="updateStatus('${app.id}', 'rejected')"
-                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">Rejeter</button>
-              <button onclick="updateStatus('${app.id}', 'action_required')"
-                class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">Action requise</button>
-              <button onclick="downloadPdf()"
-                class="ml-auto bg-gray-900 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-semibold">PDF</button>
+          <hr>
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-gray-700">Message / Remarque pour le candidat :</label>
+            <textarea id="staffNotesInput" class="w-full border p-2 text-xs rounded-lg">${app.staff_notes || ''}</textarea>
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button onclick="updateStatus('${app.id}', 'approved')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Approuver</button>
+              <button onclick="updateStatus('${app.id}', 'rejected')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Rejeter</button>
+              <button onclick="updateStatus('${app.id}', 'action_required')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Action requise</button>
+              <button onclick="downloadPdf()" class="bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-medium ml-auto">Télécharger PDF</button>
             </div>
           </div>
         </div>`;
@@ -475,29 +323,15 @@
         headers: { 'Content-Type': 'application/json', 'x-staff-code': activeStaffPassword },
         body: JSON.stringify({ id, action, staff_notes: notes })
       });
-      await loadStaffList();
-      // Re-open detail with updated data
-      const updated = allCandidates.find(c => c.id === id);
-      if (updated) openDetail(updated);
+      loadStaffList();
     }
 
     function downloadPdf() {
       html2pdf().from(document.getElementById('pdfArea')).save('dossier_candidat.pdf');
     }
 
-    // Close modal on backdrop click
-    document.getElementById('detailModal').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
-    });
-
-    // Token auto-check
     const token = new URLSearchParams(window.location.search).get('token');
-    if (token) { tab('status'); document.getElementById('tokenIn').value = token; checkStatus(); }
-
-    // Default tab
-    tab('apply');
+    if(token) { tab('status'); document.getElementById('tokenIn').value = token; checkStatus(); }
   </script>
 </body>
-</html>
-
-  
+            </html>
