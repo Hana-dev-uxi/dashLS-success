@@ -117,7 +117,7 @@ export async function onRequest(context) {
     }
 
     console.log('files uploaded');
-    const aiSummary = await generateGroqSummary(name, notes || '', env);
+    const aiSummary = `Candidat: ${name}`;
     console.log('AI summary generated:', aiSummary);
 
     console.log('About to insert to Supabase');
