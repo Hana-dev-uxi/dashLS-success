@@ -10,6 +10,9 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     .ls-brand { font-family: 'Playfair Display', serif; font-style: italic; color: #111; }
+    .candidate-card { transition: all .15s ease; }
+    .candidate-card:hover { border-color: #d4a72c; background: #fffbeb; }
+    .candidate-card.selected { border-color: #b8860b; background: #fef3c7; }
   </style>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen text-gray-800">
@@ -123,12 +126,14 @@
     let activeStaffPassword = '';
     let allCandidates = [];
     let hiddenIds = new Set();
+    let selectedId = null;
 
     function tab(name) {
       ['apply','status','staff'].forEach(t => document.getElementById('view-'+t).classList.add('hidden'));
       document.getElementById('view-'+name).classList.remove('hidden');
     }
 
+    // ── FORM SUBMIT ──────────────────────────────────
     async function submitForm(e) {
       e.preventDefault();
       const btn = document.getElementById('subBtn');
@@ -147,7 +152,7 @@
         const res = await fetch('/api/apply', { method: 'POST', body: formData });
         const contentType = res.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-          throw new Error(`Le serveur a répondu avec la valeur (${res.status}). Vérifiez le fichier netlify.toml.`);
+          throw new Error(`Le serveur a répondu avec la valeur (${res.status}).`);
         }
         const data = await res.json();
         if (res.ok && data.success) {
@@ -166,6 +171,7 @@
       }
     }
 
+    // ── STATUS CHECK ─────────────────────────────────
     async function checkStatus() {
       const t = document.getElementById('tokenIn').value;
       const res = await fetch('/api/status?token=' + t);
@@ -185,6 +191,7 @@
       }
     }
 
+    // ── STAFF LOGIN ──────────────────────────────────
     async function loginStaff(e) {
       e.preventDefault();
       const pass = document.getElementById('staffPassInput').value;
@@ -212,28 +219,32 @@
       document.getElementById('staff-login').classList.remove('hidden');
       allCandidates = [];
       hiddenIds = new Set();
+      selectedId = null;
     }
 
+    // ── LOAD LIST (fix: actually store into allCandidates) ──
     async function loadStaffList() {
-  const res = await fetch('/api/staff-list', {
-    headers: { 'x-staff-code': activeStaffPassword }
-  });
-  if(!res.ok) {
-    console.error('staff-list error:', res.status, await res.text());
-    return;
-  }
-  const data = await res.json();
-  renderList(data);
-}
+      const res = await fetch('/api/staff-list', {
+        headers: { 'x-staff-code': activeStaffPassword }
+      });
+      if(!res.ok) {
+        console.error('staff-list error:', res.status, await res.text());
+        return;
+      }
+      allCandidates = await res.json();
+      renderList(allCandidates);
+    }
 
+    // ── SEARCH (fix: filters allCandidates, never mutates it) ──
     function filterCandidates() {
       const q = document.getElementById('searchInput').value.toLowerCase();
       const filtered = allCandidates.filter(c =>
-        c.student_name.toLowerCase().includes(q) || c.student_email.toLowerCase().includes(q)
+        (c.student_name || '').toLowerCase().includes(q) || (c.student_email || '').toLowerCase().includes(q)
       );
       renderList(filtered);
     }
 
+    // ── RENDER LIST (fix: use dataset + addEventListener instead of inline JSON onclick) ──
     function renderList(data) {
       const list = document.getElementById('studentList');
       list.innerHTML = '';
@@ -247,26 +258,41 @@
       const statusLabels = { pending:'En attente', approved:'Approuvé', rejected:'Refusé', action_required:'Action requise' };
       visible.forEach(item => {
         const div = document.createElement('div');
-        div.className = 'p-3 border rounded-lg border-gray-200 hover:bg-amber-50 hover:border-amber-300 transition';
+        div.className = `candidate-card p-3 border rounded-lg border-gray-200 ${selectedId === item.id ? 'selected' : ''}`;
         div.innerHTML = `
           <div class="flex justify-between items-start">
-            <div class="flex-1 min-w-0 cursor-pointer" onclick='showDetail(${JSON.stringify(item)})'>
+            <div class="flex-1 min-w-0 cursor-pointer candidate-click">
               <div class="font-bold text-sm text-gray-900 truncate">${item.student_name}</div>
               <div class="text-xs text-gray-500 truncate">${item.student_email}</div>
               <span class="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase ${statusColors[item.status] || 'bg-gray-100 text-gray-600'}">${statusLabels[item.status] || item.status}</span>
             </div>
-            <button onclick="hideCandidate('${item.id}')" class="text-gray-300 hover:text-red-400 text-sm ml-2 flex-shrink-0 mt-0.5" title="Masquer">✕</button>
+            <button class="hide-btn text-gray-300 hover:text-red-400 text-sm ml-2 flex-shrink-0 mt-0.5" title="Masquer">✕</button>
           </div>`;
+        div.querySelector('.candidate-click').addEventListener('click', () => showDetail(item));
+        div.querySelector('.hide-btn').addEventListener('click', (e) => { e.stopPropagation(); hideCandidate(item.id); });
         list.appendChild(div);
       });
     }
 
+    // ── HIDE (fix: only hides the ONE candidate, re-renders from allCandidates not visible list) ──
     function hideCandidate(id) {
       hiddenIds.add(id);
-      filterCandidates();
+      if (selectedId === id) {
+        selectedId = null;
+        document.getElementById('studentDetails').innerHTML =
+          '<div class="text-sm text-gray-500 flex items-center justify-center h-64">Cliquez sur un candidat dans la liste pour afficher son dossier complet.</div>';
+      }
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = q
+        ? allCandidates.filter(c => (c.student_name || '').toLowerCase().includes(q) || (c.student_email || '').toLowerCase().includes(q))
+        : allCandidates;
+      renderList(filtered);
     }
 
+    // ── DETAIL ───────────────────────────────────────
     function showDetail(app) {
+      selectedId = app.id;
+      filterCandidates();
       const docsHtml = (app.document_urls && app.document_urls.length)
         ? app.document_urls.map((url, idx) => `<a href="${url}" target="_blank" class="inline-flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 hover:underline">📄 Document ${idx+1}</a>`).join(' ')
         : '<span class="text-xs text-gray-400">Aucun document transmis</span>';
@@ -301,13 +327,17 @@
             <label class="block text-xs font-bold text-gray-700">Message / Remarque pour le candidat :</label>
             <textarea id="staffNotesInput" class="w-full border p-2 text-xs rounded-lg">${app.staff_notes || ''}</textarea>
             <div class="flex flex-wrap gap-2 pt-1">
-              <button onclick="updateStatus('${app.id}', 'approved')" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Approuver</button>
-              <button onclick="updateStatus('${app.id}', 'rejected')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Rejeter</button>
-              <button onclick="updateStatus('${app.id}', 'action_required')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Action requise</button>
-              <button onclick="downloadPdf()" class="bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-medium ml-auto">Télécharger PDF</button>
+              <button id="btnApprove" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Approuver</button>
+              <button id="btnReject" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Rejeter</button>
+              <button id="btnAction" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Action requise</button>
+              <button id="btnPdf" class="bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-medium ml-auto">Télécharger PDF</button>
             </div>
           </div>
         </div>`;
+      document.getElementById('btnApprove').addEventListener('click', () => updateStatus(app.id, 'approved'));
+      document.getElementById('btnReject').addEventListener('click', () => updateStatus(app.id, 'rejected'));
+      document.getElementById('btnAction').addEventListener('click', () => updateStatus(app.id, 'action_required'));
+      document.getElementById('btnPdf').addEventListener('click', downloadPdf);
     }
 
     async function updateStatus(id, action) {
@@ -317,7 +347,9 @@
         headers: { 'Content-Type': 'application/json', 'x-staff-code': activeStaffPassword },
         body: JSON.stringify({ id, action, staff_notes: notes })
       });
-      loadStaffList();
+      await loadStaffList();
+      const updated = allCandidates.find(c => c.id === id);
+      if (updated) showDetail(updated);
     }
 
     function downloadPdf() {
