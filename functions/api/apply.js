@@ -13,9 +13,7 @@ async function uploadToSupabase(file, env) {
   const fileExt = getFileExtension(file.name);
   const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}${fileExt}`;
   const uploadUrl = `${env.SUPABASE_URL}/storage/v1/object/student-docs/${fileName}`;
-
   const buffer = await file.arrayBuffer();
-
   const res = await fetch(uploadUrl, {
     method: 'POST',
     headers: {
@@ -25,7 +23,6 @@ async function uploadToSupabase(file, env) {
     },
     body: buffer
   });
-
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(`Storage upload failed: ${errText}`);
@@ -35,7 +32,6 @@ async function uploadToSupabase(file, env) {
 
 async function generateGroqSummary(studentName, notes, env) {
   if (!env.GROQ_API_KEY) return `Dossier soumis par ${studentName}.`;
-
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -54,14 +50,13 @@ RÈGLES STRICTES :
 1. ZERO HALLUCINATION : N'invente ABSOLUMENT AUCUN détail (pas de diplôme, pas de parcours, pas de domaine d'études) qui n'est pas explicitement écrit dans la note.
 2. FIAT JUSTITIA : Si la note est courte, ton résumé doit être très court (1 phrase max). Ne meuble pas.
 3. PAS DE MÉTATEXTE : Pas de "Voici le résumé", "Le candidat explique que", etc. Donne direct la synthèse.` },
-          { role: 'user', content: `Candidat: ${studentName}. Remarques/Motivations: ${notes} /no_think` }
+          { role: 'user', content: `Candidat: ${studentName}. Remarques/Motivations: ${notes}` }
         ]
       })
     });
     const data = await res.json();
     return data.choices?.[0]?.message?.content || `Dossier soumis par ${studentName}.`;
   } catch (e) {
-    console.log('Groq error:', e.message);
     return `Candidat: ${studentName}`;
   }
 }
@@ -98,10 +93,7 @@ export async function onRequest(context) {
   }
 
   try {
-    console.log('apply.js called');
     const formData = await request.formData();
-    console.log('formData received');
-    
     const name = formData.get('name');
     const email = formData.get('email');
     const phone = formData.get('phone');
@@ -116,18 +108,26 @@ export async function onRequest(context) {
       }
     }
 
-    console.log('files uploaded');
-    const aiSummary = `Candidat: ${name}`;
-    console.log('AI summary generated:', aiSummary);
+    const aiSummary = await generateGroqSummary(name, notes || '', env);
 
-    console.log('About to insert to Supabase');
-const dbRes = {
-  ok: true,
-  status: 200,
-  json: async () => [{ access_token: 'test-token-12345', id: 'test-id' }]
-};
+    const dbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/applications`, {
+      method: 'POST',
+      headers: {
+        'apikey': env.SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${env.SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({
+        student_name: name,
+        student_email: email,
+        student_phone: phone || null,
+        notes: notes || '',
+        document_urls: uploadedDocUrls,
+        ai_summary: aiSummary
+      })
+    });
 
-    console.log('Supabase response:', dbRes.status);
     const data = await dbRes.json();
     if (!dbRes.ok) {
       return new Response(JSON.stringify({ error: `Database error: ${data.message || JSON.stringify(data)}` }), { 
@@ -155,7 +155,6 @@ const dbRes = {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   } catch (err) {
-    console.error('Error in apply.js:', err.message);
     return new Response(JSON.stringify({ error: err.message }), { 
       status: 500, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
