@@ -215,13 +215,16 @@
     }
 
     async function loadStaffList() {
-      const res = await fetch('/api/staff-list', {
-        headers: { 'x-staff-code': activeStaffPassword }
-      });
-      if(!res.ok) return logoutStaff();
-      allCandidates = await res.json();
-      renderList(allCandidates);
-    }
+  const res = await fetch('/api/staff-list', {
+    headers: { 'x-staff-code': activeStaffPassword }
+  });
+  if(!res.ok) {
+    console.error('staff-list error:', res.status, await res.text());
+    return;
+  }
+  const data = await res.json();
+  renderList(data);
+}
 
     function filterCandidates() {
       const q = document.getElementById('searchInput').value.toLowerCase();
