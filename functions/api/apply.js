@@ -61,6 +61,7 @@ RÈGLES STRICTES :
     const data = await res.json();
     return data.choices?.[0]?.message?.content || `Dossier soumis par ${studentName}.`;
   } catch (e) {
+    console.log('Groq error:', e.message);
     return `Candidat: ${studentName}`;
   }
 }
@@ -85,12 +86,10 @@ async function sendEmail(to, subject, html, env) {
 export async function onRequest(context) {
   const { request, env } = context;
 
-  // 1. Preflight CORS
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 
-  // 2. Enforce POST
   if (request.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), { 
       status: 405, 
@@ -99,7 +98,10 @@ export async function onRequest(context) {
   }
 
   try {
+    console.log('apply.js called');
     const formData = await request.formData();
+    console.log('formData received');
+    
     const name = formData.get('name');
     const email = formData.get('email');
     const phone = formData.get('phone');
@@ -114,8 +116,11 @@ export async function onRequest(context) {
       }
     }
 
+    console.log('files uploaded');
     const aiSummary = await generateGroqSummary(name, notes || '', env);
+    console.log('AI summary generated:', aiSummary);
 
+    console.log('About to insert to Supabase');
     const dbRes = await fetch(`${env.SUPABASE_URL}/rest/v1/applications`, {
       method: 'POST',
       headers: {
@@ -134,6 +139,7 @@ export async function onRequest(context) {
       })
     });
 
+    console.log('Supabase response:', dbRes.status);
     const data = await dbRes.json();
     if (!dbRes.ok) {
       return new Response(JSON.stringify({ error: `Database error: ${data.message || JSON.stringify(data)}` }), { 
@@ -161,6 +167,7 @@ export async function onRequest(context) {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   } catch (err) {
+    console.error('Error in apply.js:', err.message);
     return new Response(JSON.stringify({ error: err.message }), { 
       status: 500, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
