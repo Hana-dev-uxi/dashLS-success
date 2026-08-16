@@ -30,13 +30,16 @@ export async function onRequest(context) {
   });
 
   const data = await dbRes.json();
-if (!dbRes.ok) {
+  
+  if (!dbRes.ok) {
+    return new Response(JSON.stringify(data), { 
+      status: dbRes.status, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    });
+  }
+  
   return new Response(JSON.stringify(data), { 
-    status: dbRes.status, 
+    status: 200, 
     headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
   });
 }
-return new Response(JSON.stringify(data), { 
-  status: 200, 
-  headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-});
